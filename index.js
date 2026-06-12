@@ -172,7 +172,13 @@ export default {
       return jsonResponse({ success: true }, { status: 200, headers: corsHeaders });
     } catch (error) {
       console.error("Email send failed", error);
-      return jsonResponse({ error: "Unable to send email" }, { status: 500, headers: corsHeaders });
+
+      return jsonResponse({
+        error: "Unable to send email",
+        message: error?.message,
+        name: error?.name,
+        code: error?.code
+      }, { status: 500, headers: corsHeaders });
     }
   },
 };
