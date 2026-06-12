@@ -160,6 +160,23 @@
       background: var(--pine);
     }
 
+    .form-status {
+      min-height: 24px;
+      margin: -6px 0 0;
+      color: var(--muted);
+      font-size: 0.96rem;
+      line-height: 1.4;
+      text-align: center;
+    }
+
+    .form-status[data-state="success"] {
+      color: var(--pine);
+    }
+
+    .form-status[data-state="error"] {
+      color: #b42318;
+    }
+
     @media (max-width: 680px) {
       .navbar {
         align-items: flex-start;
@@ -189,7 +206,8 @@
 
   <main>
     <section class="demo-card" aria-label="Request a demo">
-      <form class="demo-form" action="mailto:akhil100@gmail.com" method="post" enctype="text/plain">
+      <form class="demo-form" action="/api/demo" method="post">
+        <input type="hidden" name="type" value="demo-request" />
         <input class="field" type="email" name="Company Email" placeholder="Your Company Email*" required />
         <input class="field" type="text" name="First Name" placeholder="First Name" />
         <input class="field" type="text" name="Last Name" placeholder="Last Name" />
@@ -206,8 +224,46 @@
         <div class="submit-row">
           <button class="submit-button" type="submit">Request a demo</button>
         </div>
+        <p class="form-status" aria-live="polite"></p>
       </form>
     </section>
   </main>
+  <script>
+    const form = document.querySelector(".demo-form");
+    const status = document.querySelector(".form-status");
+    const button = document.querySelector(".submit-button");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const formData = new FormData(form);
+      const payload = Object.fromEntries(formData.entries());
+
+      status.textContent = "Sending request...";
+      status.dataset.state = "";
+      button.disabled = true;
+
+      try {
+        const response = await fetch(form.action, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          throw new Error("Request failed");
+        }
+
+        form.reset();
+        status.textContent = "Thanks. We received your request.";
+        status.dataset.state = "success";
+      } catch (error) {
+        status.textContent = "We could not send your request. Please try again.";
+        status.dataset.state = "error";
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
 </body>
 </html>

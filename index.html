@@ -640,14 +640,14 @@
                 <span class="icon-tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-8 0v2" /><circle cx="12" cy="7" r="4" /><path d="M6 21h12" /></svg></span>
                 <span>Join our Team</span>
               </a>
-              <a class="company-link" href="#contact">
+              <a class="company-link" href="#contact" data-email-event="contact-click">
                 <span class="icon-tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16v16H4z" /><path d="m4 7 8 6 8-6" /></svg></span>
                 <span>Contact Us</span>
               </a>
             </div>
           </div>
 
-          <a class="demo-link" href="demo.html">Get a Demo</a>
+          <a class="demo-link" href="demo.html" data-email-event="demo-click">Get a Demo</a>
         </div>
       </nav>
     </header>
@@ -781,5 +781,30 @@
       <p>&copy; 2026 NorCal AI Solutions LLC. All rights reserved.</p>
     </footer>
   </div>
+  <script>
+    document.querySelectorAll("[data-email-event]").forEach((link) => {
+      link.addEventListener("click", () => {
+        const payload = {
+          type: link.dataset.emailEvent,
+          source: link.textContent.trim(),
+          page: window.location.pathname,
+        };
+
+        const body = JSON.stringify(payload);
+
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon("/api/email", new Blob([body], { type: "application/json" }));
+          return;
+        }
+
+        fetch("/api/email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body,
+          keepalive: true,
+        }).catch(() => {});
+      });
+    });
+  </script>
 </body>
 </html>
