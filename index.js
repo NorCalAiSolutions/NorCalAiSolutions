@@ -125,60 +125,10 @@ export default {
       return new Response(null, { headers: corsHeaders });
     }
 
-    const url = new URL(request.url);
-    const isEmailRoute = url.pathname === "/api/email" || url.pathname === "/api/contact" || url.pathname === "/api/demo";
-
-    if (!isEmailRoute) {
-      if (env.ASSETS) {
-        return env.ASSETS.fetch(request);
-      }
-
-      return new Response("Not found", { status: 404 });
-    }
-
-    if (request.method !== "POST") {
-      return jsonResponse({ error: "Method not allowed" }, { status: 405, headers: corsHeaders });
-    }
-
-    if (!env.EMAIL) {
-      return jsonResponse({ error: "Email binding is not configured" }, { status: 500, headers: corsHeaders });
-    }
-
-    if (!env.EMAIL_FROM) {
-      return jsonResponse({ error: "EMAIL_FROM is not configured" }, { status: 500, headers: corsHeaders });
-    }
-
-    try {
-      const payload = await readPayload(request);
-      const email = buildEmail(payload);
-
-      const message = {
-        to: env.EMAIL_TO || DEFAULT_EMAIL_TO,
-        from: {
-          email: env.EMAIL_FROM,
-          name: env.EMAIL_FROM_NAME || "NorCal AI Solutions",
-        },
-        subject: email.subject,
-        text: email.text,
-        html: email.html,
-      };
-
-      if (email.replyTo) {
-        message.replyTo = email.replyTo;
-      }
-
-      await env.EMAIL.send(message);
-
-      return jsonResponse({ success: true }, { status: 200, headers: corsHeaders });
-    } catch (error) {
-      console.error("Email send failed", error);
-
-      return jsonResponse({
-        error: "Unable to send email",
-        message: error?.message,
-        name: error?.name,
-        code: error?.code
-      }, { status: 500, headers: corsHeaders });
-    }
+    return jsonResponse({
+      EMAIL_FROM: env.EMAIL_FROM || null,
+      EMAIL_TO: env.EMAIL_TO || null,
+      EMAIL_FROM_NAME: env.EMAIL_FROM_NAME || null
+    });
   },
 };
