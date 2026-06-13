@@ -446,6 +446,113 @@
       color: var(--ink);
     }
 
+    .contact-section {
+      padding: 56px clamp(18px, 4vw, 48px) 72px;
+      background: #ffffff;
+    }
+
+    .contact-inner {
+      max-width: 920px;
+      margin: 0 auto;
+      display: grid;
+      gap: 26px;
+    }
+
+    .contact-head {
+      display: grid;
+      gap: 10px;
+      text-align: center;
+    }
+
+    .contact-kicker {
+      margin: 0;
+      color: var(--pine);
+      font-size: 0.82rem;
+      font-weight: 850;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .contact-head p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .contact-form {
+      display: grid;
+      gap: 18px;
+      padding: clamp(24px, 4vw, 42px);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--white);
+      box-shadow: 0 18px 42px rgba(9, 33, 61, 0.08);
+    }
+
+    .contact-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .contact-field {
+      width: 100%;
+      min-height: 56px;
+      padding: 0 18px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: #f8fafc;
+      color: var(--ink);
+      font: inherit;
+    }
+
+    .contact-message {
+      min-height: 132px;
+      padding: 16px 18px;
+      resize: vertical;
+    }
+
+    .contact-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .contact-submit {
+      min-height: 56px;
+      min-width: 170px;
+      padding: 0 24px;
+      border: 0;
+      border-radius: 4px;
+      background: var(--ink);
+      color: var(--white);
+      cursor: pointer;
+      font: inherit;
+      font-weight: 850;
+      box-shadow: 0 12px 24px rgba(9, 33, 61, 0.16);
+    }
+
+    .contact-submit:hover {
+      background: var(--pine);
+    }
+
+    .contact-status {
+      min-height: 24px;
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .contact-status[data-state="success"] {
+      color: var(--pine);
+    }
+
+    .contact-status[data-state="error"] {
+      color: #b42318;
+    }
+
     .site-footer {
       padding: 0 clamp(18px, 4vw, 48px) 28px;
       color: var(--muted);
@@ -560,6 +667,10 @@
         grid-template-columns: 1fr;
       }
 
+      .contact-row {
+        grid-template-columns: 1fr;
+      }
+
       .visual {
         min-height: 330px;
       }
@@ -640,7 +751,7 @@
                 <span class="icon-tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-8 0v2" /><circle cx="12" cy="7" r="4" /><path d="M6 21h12" /></svg></span>
                 <span>Join our Team</span>
               </a>
-              <a class="company-link" href="#contact" data-email-event="contact-click">
+              <a class="company-link" href="#contact">
                 <span class="icon-tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16v16H4z" /><path d="m4 7 8 6 8-6" /></svg></span>
                 <span>Contact Us</span>
               </a>
@@ -776,12 +887,77 @@
           </div>
         </div>
       </section>
+
+      <section class="contact-section" id="contact">
+        <div class="contact-inner">
+          <div class="contact-head">
+            <p class="contact-kicker">Contact Us</p>
+            <h2>Start a Conversation</h2>
+            <p>Share a few details and we will follow up with you.</p>
+          </div>
+
+          <form class="contact-form" action="/api/contact" method="post">
+            <input type="hidden" name="type" value="contact-request" />
+            <input type="hidden" name="source" value="Contact Us" />
+
+            <input class="contact-field" type="email" name="Company Email" placeholder="Your Company Email*" required />
+
+            <div class="contact-row">
+              <input class="contact-field" type="text" name="First Name" placeholder="First Name" />
+              <input class="contact-field" type="text" name="Last Name" placeholder="Last Name" />
+            </div>
+
+            <textarea class="contact-field contact-message" name="message" placeholder="How can we help?"></textarea>
+
+            <div class="contact-actions">
+              <button class="contact-submit" type="submit">Send Message</button>
+              <p class="contact-status" aria-live="polite"></p>
+            </div>
+          </form>
+        </div>
+      </section>
     </main>
     <footer class="site-footer">
       <p>&copy; 2026 NorCal AI Solutions LLC. All rights reserved.</p>
     </footer>
   </div>
   <script>
+    const contactForm = document.querySelector(".contact-form");
+    const contactStatus = document.querySelector(".contact-status");
+    const contactSubmit = document.querySelector(".contact-submit");
+
+    contactForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const formData = new FormData(contactForm);
+      const payload = Object.fromEntries(formData.entries());
+
+      contactStatus.textContent = "Sending message...";
+      contactStatus.dataset.state = "";
+      contactSubmit.disabled = true;
+
+      try {
+        const response = await fetch(contactForm.action, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          throw new Error("Request failed");
+        }
+
+        contactForm.reset();
+        contactStatus.textContent = "Thanks. We received your message.";
+        contactStatus.dataset.state = "success";
+      } catch (error) {
+        contactStatus.textContent = "We could not send your message. Please try again.";
+        contactStatus.dataset.state = "error";
+      } finally {
+        contactSubmit.disabled = false;
+      }
+    });
+
     document.querySelectorAll("[data-email-event]").forEach((link) => {
       link.addEventListener("click", () => {
         const payload = {

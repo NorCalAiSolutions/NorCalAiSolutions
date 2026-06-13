@@ -87,9 +87,10 @@ function buildEmail(payload) {
   const page = cleanField(payload.page);
 
   const isDemo = type.includes("demo") || demoTiming;
+  const submittedAt = new Date().toISOString();
   const subject = isDemo
-    ? "NorCal AI Solutions demo request"
-    : "NorCal AI Solutions contact request";
+    ? `NorCal AI Solutions demo request - ${firstName || "Unknown"} - ${submittedAt}`
+    : `NorCal AI Solutions contact request - ${firstName || "Unknown"} - ${submittedAt}`;
 
   const lines = [
     `Source: ${source}`,
@@ -99,7 +100,7 @@ function buildEmail(payload) {
     demoTiming ? `Demo timing: ${demoTiming}` : "",
     message ? `Message: ${message}` : "",
     page ? `Page: ${page}` : "",
-    `Submitted: ${new Date().toISOString()}`,
+    `Submitted: ${submittedAt}`,
   ].filter(Boolean);
 
   const htmlRows = lines
